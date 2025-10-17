@@ -159,10 +159,10 @@
             style="width: 100%"
           >
             <el-option
-              v-for="case in uiTestCases"
-              :key="case.id"
-              :label="case.case_name"
-              :value="case.id"
+              v-for="testcase in uiTestCases"
+              :key="testcase.id"
+              :label="testcase.case_name"
+              :value="testcase.id"
             />
           </el-select>
         </el-form-item>
@@ -316,7 +316,7 @@ const runSelectedTests = async () => {
   }
 
   try {
-    const caseIds = selectedCases.value.map(case => case.id)
+    const caseIds = selectedCases.value.map(testcase => testcase.id)
     await uiTestsAPI.runUiTest(projectId.value, caseIds)
     ElMessage.success('测试已开始运行')
     // 可以轮询报告状态

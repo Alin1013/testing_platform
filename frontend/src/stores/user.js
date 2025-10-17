@@ -22,6 +22,7 @@ export const useUserStore = defineStore('user', () => {
       localStorage.setItem('userInfo', JSON.stringify(user.value))
       return response
     } catch (error) {
+      // 重新抛出错误，让组件能够捕获并显示
       throw error
     }
   }
