@@ -70,6 +70,16 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  const deleteAccount = async () => {
+    try {
+      const response = await userAPI.deleteAccount()
+      logout()
+      return response
+    } catch (error) {
+      throw error
+    }
+  }
+
   return {
     user,
     token,
@@ -79,6 +89,7 @@ export const useUserStore = defineStore('user', () => {
     register,
     updateProfile,
     updateAvatar,
-    fetchCurrentUser
+    fetchCurrentUser,
+    deleteAccount
   }
 })

@@ -30,6 +30,11 @@ export const userAPI = {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+
+  // 删除账户
+  deleteAccount() {
+    return api.delete('/users/me')
   }
 }
 
