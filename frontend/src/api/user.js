@@ -6,9 +6,23 @@ export const userAPI = {
     return api.post('/login', credentials)
   },
 
-  // 用户注册
+  // 用户注册 - 使用 FormData
   register(userData) {
-    return api.post('/register', userData)
+    // 创建 FormData 对象
+    const formData = new FormData()
+    formData.append('username', userData.username)
+    formData.append('password', userData.password)
+
+    // 如果有头像文件，添加到 FormData
+    if (userData.avatar) {
+      formData.append('avatar', userData.avatar)
+    }
+
+    return api.post('/register', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
 
   // 获取当前用户信息

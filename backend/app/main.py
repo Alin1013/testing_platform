@@ -12,6 +12,7 @@ from app.models.ui_test import UIInfo
 from app.models.business_flow import BusinessFlow
 from app.models.test_reports import TestReports
 
+
 # 创建数据库表
 try:
     Base.metadata.create_all(bind=engine)
@@ -39,6 +40,7 @@ os.makedirs("static/avatars", exist_ok=True)
 os.makedirs("reports", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")
+
 
 # 导入并注册路由
 try:

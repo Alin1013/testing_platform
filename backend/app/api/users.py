@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import UserInfo
@@ -6,35 +6,58 @@ from app.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token
 from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
 import os
 import shutil
+from typing import Optional
+from pathlib import Path
 
 router = APIRouter()
 
 
 @router.post("/register", response_model=UserResponse)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(
+        username: str = Form(...),
+        password: str = Form(...),
+        avatar: Optional[UploadFile] = File(None),
+        db: Session = Depends(get_db)
+):
     # 检查用户名是否已存在
-    db_user = db.query(UserInfo).filter(UserInfo.username == user.username).first()
+    db_user = db.query(UserInfo).filter(UserInfo.username == username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
 
+    # 处理头像上传
+    avatar_filename = "default_avatar.png"
+    if avatar and avatar.filename:
+        # 创建头像目录
+        avatar_dir = Path("backend/static/avatars")
+        avatar_dir.mkdir(parents=True, exist_ok=True)
+
+        # 生成安全的文件名
+        file_extension = avatar.filename.split('.')[-1]
+        avatar_filename = f"{username}_avatar.{file_extension}"
+        avatar_path = avatar_dir / avatar_filename
+
+        # 保存文件
+        with avatar_path.open("wb") as buffer:
+            shutil.copyfileobj(avatar.file, buffer)
+
     # 密码验证
-    if len(user.password) < 8 or not any(c.isalpha() for c in user.password):
+    if len(password) < 8 or not any(c.isalpha() for c in password):
         raise HTTPException(
             status_code=400,
             detail="Password must be at least 8 characters long and contain letters"
         )
 
     # 创建用户
-    hashed_password = get_password_hash(user.password)
+    hashed_password = get_password_hash(password)
     db_user = UserInfo(
-        username=user.username,
+        username=username,
         password_hash=hashed_password,
-        avatar_path="default_avatar.png"
+        avatar_path=avatar_filename
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    return UserResponse.from_orm(db_user)
 
 
 @router.post("/login", response_model=Token)
@@ -66,6 +89,14 @@ def update_user(
         db: Session = Depends(get_db)
 ):
     if user_update.username:
+        # 检查新用户名是否已被其他用户使用
+        existing_user = db.query(UserInfo).filter(
+            UserInfo.username == user_update.username,
+            UserInfo.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already taken")
+
         current_user.username = user_update.username
 
     if user_update.password:
@@ -88,16 +119,16 @@ def upload_avatar(
         db: Session = Depends(get_db)
 ):
     # 创建头像目录
-    avatar_dir = "static/avatars"
-    os.makedirs(avatar_dir, exist_ok=True)
+    avatar_dir = Path("static/avatars")
+    avatar_dir.mkdir(parents=True, exist_ok=True)
 
     # 生成文件名
     file_extension = file.filename.split('.')[-1]
     filename = f"avatar_{current_user.id}.{file_extension}"
-    file_path = os.path.join(avatar_dir, filename)
+    file_path = avatar_dir / filename
 
     # 保存文件
-    with open(file_path, "wb") as buffer:
+    with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     # 更新数据库

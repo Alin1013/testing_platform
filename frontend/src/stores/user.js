@@ -36,6 +36,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 其余方法保持不变...
   const updateProfile = async (profileData) => {
     try {
       const response = await userAPI.updateUser(profileData)
