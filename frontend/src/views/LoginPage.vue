@@ -5,29 +5,31 @@
         <h2>登录</h2>
       </template>
       <el-form :model="form" :rules="rules" ref="loginFormRef">
-        <!-- 用户名输入框：新增错误提示关联 -->
+        <!-- 用户名输入框 -->
         <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="用户名" size="large">
+          <el-input v-model="form.username" placeholder="用户名" size="large" @input="clearGlobalError">
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
           </el-input>
         </el-form-item>
-        <!-- 密码输入框：新增错误提示关联 -->
+        <!-- 密码输入框 -->
         <el-form-item prop="password">
-          <el-input v-model="form.password" type="password" placeholder="密码" size="large" show-password>
+          <el-input v-model="form.password" type="password" placeholder="密码" size="large" show-password @input="clearGlobalError">
             <template #prefix>
               <el-icon><Lock /></el-icon>
             </template>
           </el-input>
         </el-form-item>
-        <!-- 全局错误提示：专门显示账号密码匹配类错误 -->
+        <!-- 全局错误提示：手动关闭 -->
         <el-form-item v-if="globalError" class="error-tip">
           <el-alert
             type="error"
-            title="登录失败"
+            :title="globalErrorTitle"
             :description="globalError"
             show-icon
+            :closable="true"
+            @close="handleCloseError"
             size="small"
           />
         </el-form-item>
@@ -49,15 +51,16 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { ElMessage, ElAlert } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref()
 const loading = ref(false)
-// 新增：存储全局登录错误信息（如用户名不存在、密码错误）
+// 存储全局登录错误信息
 const globalError = ref('')
+const globalErrorTitle = ref('登录失败')
 
 const form = reactive({
   username: '',
@@ -75,10 +78,20 @@ const rules = reactive({
   ]
 })
 
+// 清除错误提示
+const clearGlobalError = () => {
+  globalError.value = ''
+}
+
+// 手动关闭错误提示
+const handleCloseError = () => {
+  globalError.value = ''
+}
+
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   // 每次登录前清空上一次的错误提示
-  globalError.value = ''
+  clearGlobalError()
 
   loginFormRef.value.validate(async (valid) => {
     if (valid) {
@@ -88,21 +101,29 @@ const handleLogin = async () => {
         ElMessage.success('登录成功')
         router.push('/')
       } catch (error) {
-        // 核心：根据后端返回的错误信息，区分不同场景
-        const errorMsg = error.response?.data?.detail || '登录失败，请稍后重试'
+        // 根据后端返回的错误信息，区分不同场景
+        const errorMsg = error.response?.data?.detail || error.message || '登录失败，请稍后重试'
 
-        // 场景1：用户名不存在（需后端返回包含“不存在”的提示，如“用户不存在”）
-        if (errorMsg.includes('不存在')) {
+        // 场景1：用户名不存在
+        if (errorMsg.includes('不存在') || errorMsg.includes('not found') || errorMsg.includes('incorrect')) {
+          globalErrorTitle.value = '用户名不存在'
           globalError.value = '当前用户名不存在，请检查输入或前往注册'
         }
-        // 场景2：密码错误（需后端返回包含“密码”的提示，如“密码错误”）
-        else if (errorMsg.includes('密码')) {
+        // 场景2：密码错误
+        else if (errorMsg.includes('密码') || errorMsg.includes('password')) {
+          globalErrorTitle.value = '密码错误'
           globalError.value = '密码输入错误，请重新输入'
-          // 可选：密码错误时自动清空密码框，提升安全性
+          // 密码错误时自动清空密码框
           form.password = ''
         }
-        // 场景3：其他错误（如网络异常、服务器问题）
+        // 场景3：网络错误
+        else if (errorMsg.includes('network') || errorMsg.includes('Network')) {
+          globalErrorTitle.value = '网络错误'
+          globalError.value = '网络连接失败，请检查网络连接'
+        }
+        // 场景4：其他错误
         else {
+          globalErrorTitle.value = '登录失败'
           globalError.value = errorMsg
         }
       } finally {
@@ -128,13 +149,17 @@ const handleLogin = async () => {
   text-align: center;
   margin-top: 20px;
 }
-/* 新增：错误提示样式优化，与输入框对齐 */
+/* 错误提示样式优化 */
 .error-tip {
   margin-bottom: 0;
   padding-bottom: 0;
 }
-/* 调整Alert组件间距，避免过于拥挤 */
+/* 调整Alert组件间距 */
 :deep(.el-alert) {
   margin-bottom: 8px;
+}
+/* 确保错误提示不会自动消失，手动关闭 */
+:deep(.el-alert) {
+  opacity: 1 !important;
 }
 </style>

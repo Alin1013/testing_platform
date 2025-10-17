@@ -33,7 +33,7 @@
           </el-upload>
         </div>
 
-        <!-- 用户信息表单 -->
+        <!-- 用户信息表单（用户名只读） -->
         <el-form
           :model="profileForm"
           :rules="rules"
@@ -42,7 +42,12 @@
           class="profile-form"
         >
           <el-form-item label="用户名" prop="username">
-            <el-input v-model="profileForm.username" placeholder="请输入用户名" />
+            <el-input
+              v-model="profileForm.username"
+              placeholder="用户名"
+              readonly
+              disabled
+            />
           </el-form-item>
 
           <el-form-item label="新密码" prop="password">
@@ -103,12 +108,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from '../stores/user' // 关联优化后的userStore
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Camera } from '@element-plus/icons-vue'
 
+// 初始化依赖
 const router = useRouter()
 const userStore = useUserStore()
 const profileFormRef = ref()
@@ -116,15 +122,17 @@ const showDeleteDialog = ref(false)
 const loading = ref(false)
 const deleting = ref(false)
 
+// 表单数据（用户名仅用于展示）
 const profileForm = reactive({
   username: '',
   password: '',
   confirmPassword: ''
 })
 
-const defaultAvatar = ref('/default-avatar.png')
+// 默认头像路径（根据项目实际路径调整）
+const defaultAvatar = ref('/src/assets/default-avatar.png')
 
-// 计算上传请求头
+// 上传请求头（携带token）
 const uploadHeaders = computed(() => ({
   Authorization: `Bearer ${userStore.token}`
 }))
@@ -156,8 +164,7 @@ const validateConfirmPassword = (rule, value, callback) => {
 
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    { required: true, message: '用户名不可为空', trigger: 'blur' }
   ],
   password: [
     { validator: validatePassword, trigger: 'blur' }
@@ -167,19 +174,19 @@ const rules = {
   ]
 }
 
-// 获取头像URL
+// 工具函数：获取头像完整URL
 const getAvatarUrl = (avatarPath) => {
   if (!avatarPath) return defaultAvatar.value
   return `http://localhost:8000/static/avatars/${avatarPath}`
 }
 
-// 格式化日期
+// 工具函数：格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '未知'
   return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
-// 头像上传前的验证
+// 头像上传前验证
 const beforeAvatarUpload = (file) => {
   const isJPGOrPNG = file.type === 'image/jpeg' || file.type === 'image/png'
   const isLt2M = file.size / 1024 / 1024 < 2
@@ -195,14 +202,13 @@ const beforeAvatarUpload = (file) => {
   return true
 }
 
-// 头像上传成功
-const handleAvatarSuccess = (response) => {
+// 头像上传成功回调
+const handleAvatarSuccess = () => {
   ElMessage.success('头像上传成功')
-  // 更新用户信息
-  userStore.user.avatar_path = response.filename
+  // 无需手动更新userInfo：userStore.updateAvatar已同步本地存储
 }
 
-// 更新个人信息
+// 更新个人信息（仅更新密码，不包含用户名）
 const updateProfile = async () => {
   if (!profileFormRef.value) return
 
@@ -210,17 +216,17 @@ const updateProfile = async () => {
     if (valid) {
       loading.value = true
       try {
-        const updateData = {
-          username: profileForm.username
-        }
-
-        // 只有在输入了新密码时才更新密码
+        const updateData = {}
+        // 仅当输入新密码时才传递password字段
         if (profileForm.password) {
           updateData.password = profileForm.password
         }
 
         await userStore.updateProfile(updateData)
         ElMessage.success('个人信息更新成功')
+        // 重置密码输入框
+        profileForm.password = ''
+        profileForm.confirmPassword = ''
       } catch (error) {
         ElMessage.error(error.response?.data?.detail || '更新失败')
       } finally {
@@ -230,19 +236,14 @@ const updateProfile = async () => {
   })
 }
 
-// 重置表单
+// 重置表单（保持用户名与userStore一致）
 const resetForm = () => {
   if (profileFormRef.value) {
     profileFormRef.value.resetFields()
   }
-  loadUserData()
-}
-
-// 加载用户数据
-const loadUserData = () => {
-  if (userStore.user) {
-    profileForm.username = userStore.user.username || ''
-  }
+  profileForm.username = userStore.user?.username || ''
+  profileForm.password = ''
+  profileForm.confirmPassword = ''
 }
 
 // 注销账户
@@ -260,10 +261,8 @@ const deleteAccount = async () => {
       }
     )
 
-    // 调用注销账户的API
-    // await userStore.deleteAccount()
+    await userStore.deleteAccount()
     ElMessage.success('账户注销成功')
-    userStore.logout()
     router.push('/login')
   } catch (error) {
     if (error !== 'cancel') {
@@ -275,9 +274,28 @@ const deleteAccount = async () => {
   }
 }
 
-// 初始化
-onMounted(() => {
-  loadUserData()
+// 监听userStore.user变化，实时同步用户名
+watch(
+  () => userStore.user,
+  (newUser) => {
+    if (newUser) {
+      profileForm.username = newUser.username || ''
+    }
+  },
+  { immediate: true }
+)
+
+// 页面初始化：加载用户信息（防止本地存储无数据时空白）
+onMounted(async () => {
+  if (!userStore.user) {
+    try {
+      await userStore.fetchCurrentUser()
+    } catch (error) {
+      ElMessage.error('加载用户信息失败，请重新登录')
+      router.push('/login')
+    }
+  }
+  profileForm.username = userStore.user?.username || ''
 })
 </script>
 
@@ -354,6 +372,13 @@ onMounted(() => {
 .actions-content p {
   margin: 0;
   color: #666;
+}
+
+/* 优化只读输入框样式 */
+:deep(.el-input.is-disabled .el-input__inner) {
+  background-color: #f5f7fa;
+  color: #303133;
+  cursor: not-allowed;
 }
 
 :deep(.el-upload) {
