@@ -28,7 +28,7 @@ async def register(
     avatar_filename = "default_avatar.png"
     if avatar and avatar.filename:
         # 创建头像目录
-        avatar_dir = Path("backend/static/avatars")
+        avatar_dir = Path("static/avatars")
         avatar_dir.mkdir(parents=True, exist_ok=True)
 
         # 生成安全的文件名
