@@ -55,7 +55,6 @@ class UITestRunner:
 
     def generate_test_file(self, test_cases, report_dir):
         test_file = report_dir / "test_ui.py"
-
         test_content = """
 import pytest
 import allure

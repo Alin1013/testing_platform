@@ -65,7 +65,8 @@ class APITestCaseResponse(APITestCaseBase):
 
 class UITestCaseBase(BaseModel):
     case_name: str
-    script_content: str
+    base_url: str
+    steps: List[Dict[str, Any]]
 
 class UITestCaseCreate(UITestCaseBase):
     project_id: int

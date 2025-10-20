@@ -15,7 +15,7 @@ def create_database():
     # 首先连接到默认数据库来创建我们的数据库
     conn = psycopg2.connect(
         host="localhost",
-        database="testing_platform",
+        database="postgres",
         user="admin",
         password="041013"
     )

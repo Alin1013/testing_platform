@@ -69,7 +69,8 @@ class APITestCaseResponse(APITestCaseBase):
 # UI测试相关的模式
 class UITestCaseBase(BaseModel):
     case_name: str
-    script_content: str
+    base_url: str
+    steps: List[Dict[str, Any]]
 
 class UITestCaseCreate(UITestCaseBase):
     project_id: int
