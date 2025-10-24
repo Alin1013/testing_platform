@@ -30,6 +30,7 @@ export const userAPI = {
       const formData = new FormData()
       formData.append('username', userData.username)
       formData.append('password', userData.password)
+        formData.append('email', userData.email)
 
       // 如果有头像文件，添加到 FormData
       if (userData.avatar) {

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -12,12 +12,12 @@ class APIInfo(Base):
     project_id = Column(Integer, ForeignKey("projectinfo.id"))
     method = Column(String(10), nullable=False)
     url = Column(Text, nullable=False)
-    headers = Column(JSONB)
-    params = Column(JSONB)
+    headers = Column(JSON)
+    params = Column(JSON)
     base_url = Column(Text, nullable=False)
     path = Column(Text, nullable=False)
-    body = Column(JSONB)
-    expected_data = Column(JSONB)
-    extra_data = Column(JSONB) #响应data数据
-    validated = Column(JSONB) #断言
+    body = Column(JSON)
+    expected_data = Column(JSON)
+    extra_data = Column(JSON) #响应data数据
+    validated = Column(JSON) #断言
     created_at = Column(TIMESTAMP, server_default=func.now())

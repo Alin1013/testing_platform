@@ -17,8 +17,14 @@ def get_projects(
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    projects = db.query(ProjectInfo).filter(ProjectInfo.user_id == current_user.id).offset(skip).limit(limit).all()
-    return projects
+    try:
+        projects = db.query(ProjectInfo).filter(ProjectInfo.user_id == current_user.id).offset(skip).limit(limit).all()
+        return projects
+    except Exception as e:
+        # 记录错误日志
+        import logging
+        logging.error(f"Error fetching projects: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch projects: {str(e)}")
 
 
 @router.post("/projects", response_model=ProjectResponse)
@@ -27,35 +33,27 @@ def create_project(
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    # 验证测试类型
-    valid_test_styles = ["api", "ui", "performance"]
-    if project.test_style not in valid_test_styles:
-        raise HTTPException(status_code=400, detail="Invalid test style")
+    try:
+        # 验证测试类型
+        valid_test_styles = ["api", "ui", "performance"]
+        if project.test_style not in valid_test_styles:
+            raise HTTPException(status_code=400, detail="Invalid test style")
 
-    db_project = ProjectInfo(
-        project_name=project.project_name,
-        test_style=project.test_style,
-        user_id=current_user.id
-    )
-    db.add(db_project)
-    db.commit()
-    db.refresh(db_project)
-    return db_project
+        db_project = ProjectInfo(
+            project_name=project.project_name,
+            test_style=project.test_style,
+            user_id=current_user.id
+        )
+        db.add(db_project)
+        db.commit()
+        db.refresh(db_project)
+        return db_project
+    except Exception as e:
+        db.rollback()  # 出错时回滚事务
+        import logging
+        logging.error(f"Error creating project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create project: {str(e)}")
 
-
-@router.get("/projects/{project_id}", response_model=ProjectResponse)
-def get_project(
-        project_id: int,
-        current_user: UserInfo = Depends(get_current_user),
-        db: Session = Depends(get_db)
-):
-    project = db.query(ProjectInfo).filter(
-        ProjectInfo.id == project_id,
-        ProjectInfo.user_id == current_user.id
-    ).first()
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
-    return project
 
 
 @router.put("/projects/{project_id}", response_model=ProjectResponse)

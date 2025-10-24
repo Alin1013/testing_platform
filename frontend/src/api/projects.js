@@ -8,7 +8,10 @@ export const projectsAPI = {
 
   // 创建项目
   createProject(projectData) {
-    return api.post('/projects', projectData)
+    return api.post('/projects', {
+      project_name: projectData.project_name,
+      test_style: projectData.test_style
+    })
   },
 
   // 获取项目详情

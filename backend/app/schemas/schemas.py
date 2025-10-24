@@ -17,6 +17,7 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
     avatar_path: Optional[str] = None
+    email: Optional[str] = None
 
 class UserResponse(UserBase):
     id: int
@@ -59,6 +60,7 @@ class APITestCaseResponse(APITestCaseBase):
     id: int
     project_id: int
     created_at: datetime
+
 
     class Config:
         from_attributes = True

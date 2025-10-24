@@ -27,7 +27,7 @@ class UserResponse(UserBase):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        from_attributes = True  # 统一使用 from_attributes（Pydantic v2 推荐）
 
 # 项目相关的模式
 class ProjectBase(BaseModel):
@@ -49,7 +49,8 @@ class ProjectResponse(ProjectBase):
 class KeyValuePair(BaseModel):
     key: str
     value: str
-#接口用例
+
+# 接口用例
 class APITestCaseBase(BaseModel):
     case_name: str
     method: str
@@ -61,21 +62,22 @@ class APITestCaseBase(BaseModel):
     form_data: Optional[List[KeyValuePair]] = None
     raw_body: Optional[str] = None
     expected_data: Optional[Dict[str, Any]] = None
-#创建接口用例
+
+# 创建接口用例
 class APITestCaseCreate(APITestCaseBase):
     project_id: int
 
 class APITestCaseUpdate(APITestCaseBase):
     case_name: Optional[str] = None  # 允许部分更新
 
-class APITestCaseInDBBase(APITestCaseBase):
+class APITestCaseResponse(APITestCaseBase):  # 修正类名，与导出一致
     id: int
     project_id: int
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # UI测试相关的模式
 class UITestCaseBase(BaseModel):
@@ -142,7 +144,8 @@ __all__ = [
     # 项目相关
     "ProjectBase", "ProjectCreate", "ProjectResponse",
     # 接口测试相关
-    "APITestCaseBase", "APITestCaseCreate", "APITestCaseResponse",
+    "KeyValuePair",  # 新增导出
+    "APITestCaseBase", "APITestCaseCreate", "APITestCaseUpdate", "APITestCaseResponse",  # 补充APITestCaseUpdate
     # UI测试相关
     "UITestCaseBase", "UITestCaseCreate", "UITestCaseResponse",
     # 业务流程相关

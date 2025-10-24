@@ -1,11 +1,12 @@
 # app/schemas/user.py
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr
 from typing import Optional
 
 
 class UserCreate(BaseModel):
     username: str
     password: str
+    email: Optional[EmailStr] = None
 
 
 class UserLogin(BaseModel):

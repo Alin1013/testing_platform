@@ -68,6 +68,13 @@
             />
           </el-form-item>
 
+            <el-form-item label="邮箱" prop="email">
+            <el-input
+              v-model="profileForm.email"
+              placeholder="请输入邮箱"
+            />
+          </el-form-item>
+
           <el-form-item>
             <el-button type="primary" @click="updateProfile" :loading="loading">
               更新信息
@@ -126,7 +133,8 @@ const deleting = ref(false)
 const profileForm = reactive({
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  email: ''
 })
 
 // 默认头像路径（根据项目实际路径调整）
@@ -171,6 +179,13 @@ const rules = {
   ],
   confirmPassword: [
     { validator: validateConfirmPassword, trigger: 'blur' }
+  ],
+  email: [
+    {
+      type: 'email',
+      message:'请输入正确的邮箱地址',
+      trigger: 'blur'
+    }
   ]
 }
 
@@ -220,6 +235,9 @@ const updateProfile = async () => {
         // 仅当输入新密码时才传递password字段
         if (profileForm.password) {
           updateData.password = profileForm.password
+        }
+        if(profileForm.email){
+          updateData.email = profileForm.email
         }
 
         await userStore.updateProfile(updateData)
@@ -280,6 +298,7 @@ watch(
   (newUser) => {
     if (newUser) {
       profileForm.username = newUser.username || ''
+      profileForm.email = newUser.email || ''
     }
   },
   { immediate: true }

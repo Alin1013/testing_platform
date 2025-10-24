@@ -16,6 +16,7 @@ router = APIRouter()
 async def register(
         username: str = Form(...),
         password: str = Form(...),
+        email: str = Form(None),
         avatar: Optional[UploadFile] = File(None),
         db: Session = Depends(get_db)
 ):
@@ -23,6 +24,12 @@ async def register(
     db_user = db.query(UserInfo).filter(UserInfo.username == username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
+
+    # 检查邮箱是否已存在
+    if email:
+        db_email = db.query(UserInfo).filter(UserInfo.email == email).first()
+        if db_email:
+            raise HTTPException(status_code=400, detail="Email already registered")
 
     # 处理头像上传
     avatar_filename = "default_avatar.png"
@@ -52,6 +59,7 @@ async def register(
     db_user = UserInfo(
         username=username,
         password_hash=hashed_password,
+        email=email,
         avatar_path=avatar_filename
     )
     db.add(db_user)

@@ -13,7 +13,7 @@ import json
 
 from sqlalchemy.sql.functions import current_user
 
-from backend.app.models import business_flow
+from app.models import business_flow
 
 router = APIRouter()
 

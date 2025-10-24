@@ -5,7 +5,8 @@
 
 import os
 import sys
-from sqlalchemy import text  # 添加这行导入
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sqlalchemy import text
 
 
 def check_python_version():

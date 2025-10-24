@@ -19,7 +19,13 @@ def init_database():
     """初始化数据库表"""
     try:
         print("正在创建数据库表...")
-        Base.metadata.create_all(bind=engine)
+        # 按依赖顺序创建表：userinfo → projectinfo → 其他表
+        Base.metadata.tables['userinfo'].create(bind=engine, checkfirst=True)
+        Base.metadata.tables['projectinfo'].create(bind=engine, checkfirst=True)
+        Base.metadata.tables['apiinfo'].create(bind=engine, checkfirst=True)
+        Base.metadata.tables['uiinfo'].create(bind=engine, checkfirst=True)
+        Base.metadata.tables['business_flow'].create(bind=engine, checkfirst=True)
+        Base.metadata.tables['test_reports'].create(bind=engine, checkfirst=True)
         print("✓ 数据库表创建成功")
         return True
     except Exception as e:

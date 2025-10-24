@@ -63,7 +63,15 @@
               <el-icon><Lock /></el-icon>
             </template>
           </el-input>
+
         </el-form-item>
+          <el-form-item prop="email">
+    <el-input v-model="form.email" placeholder="邮箱(选填)" size="large">
+      <template #prefix>
+        <el-icon><Message /></el-icon>
+      </template>
+    </el-input>
+  </el-form-item>
 
         <el-form-item>
           <el-button
@@ -91,7 +99,8 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
-import { User, Lock, Plus } from '@element-plus/icons-vue'
+import { User, Lock, Plus,Message } from '@element-plus/icons-vue'
+import {userAPI} from '../api/user'
 // 引入默认头像
 import defaultAvatarImg from '../../../backend/static/avatars/default-avatar.png'
 
@@ -105,7 +114,8 @@ const avatarPreview = ref('')
 const form = reactive({
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  email: ''
 })
 
 // 密码验证函数
@@ -141,6 +151,10 @@ const rules = reactive({
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
     { validator: validatePassword, trigger: 'blur' }
+  ],
+  email: [
+    { required: false, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'change'] }
   ]
 })
 
@@ -181,22 +195,11 @@ const handleRegister = async () => {
         const formData = new FormData()
         formData.append('username', form.username)
         formData.append('password', form.password)
-
-        if (avatarFile.value) {
-          formData.append('avatar', avatarFile.value)
+        if (form.email) {  // 仅当有邮箱时添加
+          formData.append('email', form.email)
         }
+        const response = await userAPI.register(userData)
 
-        const response = await fetch('http://localhost:8000/api/v1/register', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.detail || '注册失败')
-        }
-
-        const userData = await response.json()
         ElMessage.success('注册成功，请登录')
         router.push('/login')
       } catch (error) {
