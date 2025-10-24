@@ -46,38 +46,36 @@ class ProjectResponse(ProjectBase):
         from_attributes = True
 
 # 接口测试相关的模式
-#断言
-class ValidateItem(BaseModel):
-    check:str
-    comparator:str
-    expected:Any
-#响应
-class ExtractItem(BaseModel):
-    key:str;
-    jsonpath:str
+class KeyValuePair(BaseModel):
+    key: str
+    value: str
 #接口用例
 class APITestCaseBase(BaseModel):
     case_name: str
     method: str
-    base_url: str
-    path: str
     url: str
-    headers: Optional[Dict[str, Any]] = None
-    params: Optional[Dict[str, Any]] = None
-    body: Optional[Dict[str, Any]] = None
-    extract: Optional[List[ExtractItem]] = None
-    validated: Optional[List[ValidateItem]] = None
+    headers: Optional[List[KeyValuePair]] = None
+    params: Optional[List[KeyValuePair]] = None
+    body_type: Optional[str] = "json"
+    body: Optional[str] = None  # 存储JSON字符串
+    form_data: Optional[List[KeyValuePair]] = None
+    raw_body: Optional[str] = None
+    expected_data: Optional[Dict[str, Any]] = None
 #创建接口用例
 class APITestCaseCreate(APITestCaseBase):
     project_id: int
 
-class APITestCaseResponse(APITestCaseBase):
+class APITestCaseUpdate(APITestCaseBase):
+    case_name: Optional[str] = None  # 允许部分更新
+
+class APITestCaseInDBBase(APITestCaseBase):
     id: int
     project_id: int
-    created_at: datetime
+    created_at: str
+    updated_at: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 # UI测试相关的模式
 class UITestCaseBase(BaseModel):

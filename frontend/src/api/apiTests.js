@@ -1,12 +1,12 @@
 import api from './index'
 
 export const apiTestsAPI = {
-  // 获取接口测试用例
+  // 获取API测试用例
   getApiTestCases(projectId) {
     return api.get(`/projects/${projectId}/api-tests`)
   },
 
-  // 创建接口测试用例
+  // 创建API测试用例
   createApiTestCase(projectId, testCase) {
     return api.post(`/projects/${projectId}/api-tests`, testCase)
   },
@@ -21,12 +21,12 @@ export const apiTestsAPI = {
     return api.delete(`/api-tests/${testCaseId}`)
   },
 
-  // 执行接口测试
+  // 执行API测试
   runApiTest(projectId, testCaseIds = []) {
     return api.post(`/projects/${projectId}/api-tests/run`, { test_case_ids: testCaseIds })
   },
 
-  // 获取测试报告
+  // 获取API测试报告
   getApiTestReports(projectId) {
     return api.get(`/projects/${projectId}/api-tests/reports`)
   }
