@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:041013@localhost/testing_platform")
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:041013@localhost/testing_platform?charset=utf8mb4")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
