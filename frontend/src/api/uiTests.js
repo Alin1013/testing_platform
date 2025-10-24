@@ -39,7 +39,15 @@ export const uiTestsAPI = {
   // 创建UI业务流程
   createUiBusinessFlow(projectId, businessFlow) {
     return api.post(`/projects/${projectId}/ui-business-flows`, businessFlow)
-  }
+  },
+    //获取业务流程列表
+    getBusinessFlow(projectId) {
+      return api.get(`/projects/${projectId}/ui-business-flows`)
+    },
+    //删除业务流程
+    deleteBusinessFlow(flowId) {
+      return api.delete(`/ui-business-flows/${flowId})`)
+    }
 }
 
 export default uiTestsAPI
