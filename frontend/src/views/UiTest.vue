@@ -144,7 +144,7 @@
                   <label class="field-label">路径地址：</label>
                   <el-input
                     v-model="step.selector"
-                    placeholder="输入CSS选择器或XPath"
+                    placeholder="输入CSS选择器或XPath路径"
                     class="field-input"
                     :disabled="step.action === 'goto'"
                   />
@@ -424,7 +424,7 @@ const fetchUITestCases = async () => {
   } catch (error) {
     console.error('获取UI测试用例失败:', error)
     // 只在网络错误时提示
-    if (!error.response) {
+    if (!error.response && error.response.status ===404) {
       ElMessage.error('获取UI测试用例失败: 网络连接错误')
     }
     uiTestCases.value = []
@@ -440,7 +440,7 @@ const fetchBusinessFlows = async () => {
   } catch (error) {
     console.error('获取业务流程失败:', error)
     // 只在网络错误时提示
-    if (!error.response) {
+    if (!error.response && error.response.status ===404) {
       ElMessage.error('获取业务流程失败: 网络连接错误')
     }
     businessFlows.value = []
@@ -454,7 +454,7 @@ const fetchTestReports = async () => {
   } catch (error) {
     console.error('获取测试报告失败:', error)
     // 只在网络错误时提示
-    if (!error.response) {
+    if (!error.response && error.response.status ===404) {
       ElMessage.error('获取测试报告失败: 网络连接错误')
     }
     testReports.value = []

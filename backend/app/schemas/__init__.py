@@ -46,15 +46,28 @@ class ProjectResponse(ProjectBase):
         from_attributes = True
 
 # 接口测试相关的模式
+#断言
+class ValidateItem(BaseModel):
+    check:str
+    comparator:str
+    expected:Any
+#响应
+class ExtractItem(BaseModel):
+    key:str;
+    jsonpath:str
+#接口用例
 class APITestCaseBase(BaseModel):
     case_name: str
     method: str
+    base_url: str
+    path: str
     url: str
     headers: Optional[Dict[str, Any]] = None
     params: Optional[Dict[str, Any]] = None
     body: Optional[Dict[str, Any]] = None
-    expected_data: Optional[Dict[str, Any]] = None
-
+    extract: Optional[List[ExtractItem]] = None
+    validated: Optional[List[ValidateItem]] = None
+#创建接口用例
 class APITestCaseCreate(APITestCaseBase):
     project_id: int
 

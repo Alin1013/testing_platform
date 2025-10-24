@@ -1,11 +1,9 @@
-import requests
-import pytest
-import allure
 import json
 from datetime import datetime
 from pathlib import Path
 import subprocess
 import sys
+from httprunner import HttpRunner, Config, Step, RunRequest
 
 
 class APITestRunner:
@@ -22,21 +20,20 @@ class APITestRunner:
         # 生成测试文件
         test_file = self.generate_test_file(test_cases, report_dir)
 
-        # 运行 pytest 测试
+        # 运行测试
         allure_results_dir = report_dir / "allure-results"
         allure_results_dir.mkdir(exist_ok=True)
 
-        # 运行测试
+        # 运行HttpRunner测试
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable, "-m", "httprunner", "run",
             str(test_file),
-            f"--alluredir={allure_results_dir}",
-            "--tb=short"
+            "--allure", str(allure_results_dir)
         ]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
 
-        # 生成 allure 报告
+        # 生成allure报告
         allure_report_dir = report_dir / "allure-report"
         subprocess.run([
             "allure", "generate",
@@ -53,41 +50,64 @@ class APITestRunner:
         }
 
     def generate_test_file(self, test_cases, report_dir):
-        test_file = report_dir / "test_api.py"
+        test_file = report_dir / "test_api_testcases.py"
 
+        # 生成HttpRunner格式的测试用例
         test_content = """
-import pytest
-import requests
-import allure
+from httprunner import HttpRunner, Config, Step, RunRequest, RunTestCase
 
 """
-
         for i, case in enumerate(test_cases):
             test_content += f"""
-@allure.feature('API Tests')
-@allure.story('{case.case_name}')
-def test_case_{i}():
-    \"\"\"Test case: {case.case_name}\"\"\"
-    with allure.step('Send {case.method} request to {case.url}'):
-        response = requests.request(
-            method='{case.method}',
-            url='{case.url}',
-            headers={case.headers or {} },
-            params={case.params or {} },
-            json={case.body or {} }
-        )
+class TestCase{case.id}(HttpRunner):
+    config = (
+        Config("{case.case_name}")
+        .base_url("{case.base_url}")
+        .export(*[])
+    )
 
-    with allure.step('Verify response status code'):
-        assert response.status_code == 200
-
-    with allure.step('Verify response data'):
-        actual_data = response.json()
-        expected_data = {case.expected_data or {} }
-        # 这里可以添加更复杂的断言逻辑
-        if expected_data:
-            for key, value in expected_data.items():
-                assert key in actual_data
-                assert actual_data[key] == value
+    teststeps = [
+        Step(
+            RunRequest("{case.case_name}")
+            .{case.method.lower()}("{case.path}")
+"""
+            # 添加请求头
+            if case.headers:
+                headers_str = json.dumps(case.headers, ensure_ascii=False, indent=4)
+                test_content += f"""            .headers({headers_str})
+"""
+            # 添加请求参数
+            if case.params:
+                params_str = json.dumps(case.params, ensure_ascii=False, indent=4)
+                test_content += f"""            .params({params_str})
+"""
+            # 添加请求体
+            if case.body:
+                body_str = json.dumps(case.body, ensure_ascii=False, indent=4)
+                test_content += f"""            .json({body_str})
+"""
+            # 添加响应提取
+            if case.extract:
+                for extract in case.extract:
+                    test_content += f"""            .extract()
+            .with_jmespath("{extract.jsonpath}", name="{extract.key}")
+"""
+            # 添加断言
+            if case.validate:
+                for validate in case.validate:
+                    comparator_map = {
+                        "eq": "equal_to",
+                        "ne": "not_equal_to",
+                        "lt": "less_than",
+                        "gt": "greater_than",
+                        "contains": "contains"
+                    }
+                    comparator = comparator_map.get(validate.comparator, "equal_to")
+                    test_content += f"""            .validate()
+            .assert_{comparator}("{validate.check}", {json.dumps(validate.expected)}, "{validate.check} {validate.comparator} {validate.expected}")
+"""
+            test_content += """        )
+    ]
 
 """
 

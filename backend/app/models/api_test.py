@@ -14,6 +14,10 @@ class APIInfo(Base):
     url = Column(Text, nullable=False)
     headers = Column(JSONB)
     params = Column(JSONB)
+    base_url = Column(Text, nullable=False)
+    path = Column(Text, nullable=False)
     body = Column(JSONB)
     expected_data = Column(JSONB)
+    extra_data = Column(JSONB) #响应data数据
+    validated = Column(JSONB) #断言
     created_at = Column(TIMESTAMP, server_default=func.now())
