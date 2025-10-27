@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -12,8 +12,8 @@ class APIInfo(Base):
     project_id = Column(Integer, ForeignKey("projectinfo.id"))
     method = Column(String(10), nullable=False)
     url = Column(Text, nullable=False)
-    headers = Column(JSONB)
-    params = Column(JSONB)
-    body = Column(JSONB)
-    expected_data = Column(JSONB)
+    headers = Column(JSON)
+    params = Column(JSON)
+    body = Column(JSON)
+    expected_data = Column(JSON)
     created_at = Column(TIMESTAMP, server_default=func.now())
