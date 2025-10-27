@@ -95,9 +95,12 @@ const goToProject = (project) => {
 const fetchProjects = async () => {
   try {
     const response = await projectsAPI.getProjects()
-    projects.value = response.data
+    // 确保 projects 始终是数组（即使后端返回空）
+    projects.value = Array.isArray(response.data) ? response.data : []
   } catch (error) {
     ElMessage.error('获取项目列表失败')
+    // 出错时也确保是数组，避免渲染错误
+    projects.value = []
   }
 }
 

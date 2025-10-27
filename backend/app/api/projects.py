@@ -17,8 +17,14 @@ def get_projects(
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    projects = db.query(ProjectInfo).filter(ProjectInfo.user_id == current_user.id).offset(skip).limit(limit).all()
-    return projects
+    try:
+        # 即使没有项目，也会返回空列表，而不是错误
+        projects = db.query(ProjectInfo).filter(ProjectInfo.user_id == current_user.id).offset(skip).limit(limit).all()
+        return projects  # 没有项目时返回空列表
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching projects: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch projects: {str(e)}")
 
 
 @router.post("/projects", response_model=ProjectResponse)

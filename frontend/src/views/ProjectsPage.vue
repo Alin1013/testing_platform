@@ -114,9 +114,10 @@ const fetchProjects = async () => {
   loading.value = true
   try {
     const response = await projectsAPI.getProjects()
-    projects.value = response.data
+    projects.value = Array.isArray(response.data) ? response.data : []
   } catch (error) {
     ElMessage.error('获取项目列表失败')
+    projects.value = []
   } finally {
     loading.value = false
   }

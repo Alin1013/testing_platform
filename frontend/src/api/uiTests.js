@@ -2,7 +2,7 @@ import api from './index'
 
 export const uiTestsAPI = {
   // 获取UI测试用例
-  getUiTestCases(projectId) {
+  getUiTestCases(project_id) {
     return api.get(`/projects/${projectId}/ui-tests`)
   },
 
@@ -27,7 +27,7 @@ export const uiTestsAPI = {
   },
 
   // 获取UI测试报告
-  getUiTestReports(projectId) {
+  getUiTestReports(project_id) {
     return api.get(`/projects/${projectId}/ui-tests/reports`)
   },
 
@@ -40,14 +40,16 @@ export const uiTestsAPI = {
   createUiBusinessFlow(projectId, businessFlow) {
     return api.post(`/projects/${projectId}/ui-business-flows`, businessFlow)
   },
-    //获取业务流程列表
-    getBusinessFlow(projectId) {
-      return api.get(`/projects/${projectId}/ui-business-flows`)
-    },
-    //删除业务流程
-    deleteBusinessFlow(flowId) {
-      return api.delete(`/ui-business-flows/${flowId})`)
-    }
+
+  // 获取业务流程列表
+  getBusinessFlows(project_id) {
+    return api.get(`/projects/${projectId}/ui-business-flows`)
+  },
+
+  // 删除业务流程
+  deleteBusinessFlow(flowId) {
+    return api.delete(`/ui-business-flows/${flowId}`)
+  }
 }
 
 export default uiTestsAPI

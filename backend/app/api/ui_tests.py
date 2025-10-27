@@ -1,4 +1,3 @@
-from django import db
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -11,13 +10,9 @@ from datetime import datetime
 import uuid
 import json
 
-from sqlalchemy.sql.functions import current_user
-
-from app.models import business_flow
-
 router = APIRouter()
 
-#获得测试用例
+# 获得测试用例
 @router.get("/projects/{project_id}/ui-tests", response_model=List[UITestCaseResponse])
 def get_ui_test_cases(
         project_id: int,
@@ -35,7 +30,7 @@ def get_ui_test_cases(
     test_cases = db.query(UIInfo).filter(UIInfo.project_id == project_id).all()
     return test_cases
 
-#创建测试用例
+# 创建测试用例
 @router.post("/projects/{project_id}/ui-tests", response_model=UITestCaseResponse)
 def create_ui_test_case(
         project_id: int,
@@ -61,7 +56,7 @@ def create_ui_test_case(
     db.refresh(db_test_case)
     return db_test_case
 
-#更新测试用例
+# 更新测试用例
 @router.put("/ui-tests/{test_case_id}", response_model=UITestCaseResponse)
 def update_ui_test_case(
         test_case_id: int,
@@ -87,7 +82,7 @@ def update_ui_test_case(
     db.refresh(db_test_case)
     return db_test_case
 
-#删除测试用例
+# 删除测试用例
 @router.delete("/ui-tests/{test_case_id}")
 def delete_ui_test_case(
         test_case_id: int,
@@ -110,7 +105,7 @@ def delete_ui_test_case(
     db.commit()
     return {"message": "UI test case deleted successfully"}
 
-#执行测试用例
+# 执行测试用例
 @router.post("/projects/{project_id}/ui-tests/run")
 def run_ui_tests(
         project_id: int,
@@ -133,8 +128,6 @@ def run_ui_tests(
         UIInfo.id.in_(test_case_ids)
     ).all()
 
-    if not test_cases:
-        raise HTTPException(status_code=404, detail="No test cases found")
 
     # 创建测试报告记录
     report = TestReports(
@@ -175,7 +168,7 @@ def run_ui_tests_background(test_cases, report_id, db):
             report.status = "failed"
             db.commit()
 
-#创建工作流
+# 创建工作流
 @router.post("/projects/{project_id}/ui-business-flows", response_model=BusinessFlowResponse)
 def create_ui_business_flow(
         project_id: int,
@@ -188,8 +181,6 @@ def create_ui_business_flow(
         ProjectInfo.id == project_id,
         ProjectInfo.user_id == current_user.id
     ).first()
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
 
     db_business_flow = BusinessFlow(
         flow_name=business_flow.flow_name,
@@ -202,7 +193,7 @@ def create_ui_business_flow(
     db.refresh(db_business_flow)
     return db_business_flow
 
-#获取测试报告
+# 获取测试报告
 @router.get("/projects/{project_id}/ui-tests/reports")
 def get_ui_test_reports(
         project_id: int,
@@ -214,8 +205,6 @@ def get_ui_test_reports(
         ProjectInfo.id == project_id,
         ProjectInfo.user_id == current_user.id
     ).first()
-    if project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
 
     reports = db.query(TestReports).filter(
         TestReports.project_id == project_id,
@@ -223,7 +212,7 @@ def get_ui_test_reports(
     ).all()
     return reports
 
-#获取测试附件
+# 获取测试附件
 @router.get("/projects/{project_id}/ui-tests/reports/{report_id}/artifacts")
 def get_ui_test_artifacts(
         project_id: int,
@@ -249,14 +238,15 @@ def get_ui_test_artifacts(
     # 这里应该返回测试产生的截图、录制文件等路径
     # 简化处理，返回一个空的列表
     return {"screenshots": [], "videos": []}
-#获取业务流程列表
-@router.get('projects/{project_id}/ui-business-flows',response_model=list[BusinessFlowResponse])
+
+# 获取业务流程列表
+@router.get("/projects/{project_id}/ui-business-flows", response_model=List[BusinessFlowResponse])
 def get_ui_business_flows(
-        project_id:int,
+        project_id: int,
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    #验证项目所有权
+    # 验证项目所有权
     project = db.query(ProjectInfo).filter(
         ProjectInfo.id == project_id,
         ProjectInfo.user_id == current_user.id
@@ -264,28 +254,28 @@ def get_ui_business_flows(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    business_flows=db.query(BusinessFlow).filter(
+    business_flows = db.query(BusinessFlow).filter(
         BusinessFlow.project_id == project_id,
         BusinessFlow.test_type == "ui"
     ).all()
     return business_flows
 
-#删除业务流程
+# 删除业务流程
 @router.delete("/ui-business-flows/{flow_id}")
 def delete_ui_business_flow(
         flow_id: int,
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    project = db.query(BusinessFlow).filter(
+    business_flow = db.query(BusinessFlow).filter(
         BusinessFlow.id == flow_id,
     ).first()
     if business_flow is None:
         raise HTTPException(status_code=404, detail="No business flow found")
 
-    #验证项目所有权
+    # 验证项目所有权
     project = db.query(ProjectInfo).filter(
-        ProjectInfo.id == project.id,
+        ProjectInfo.id == business_flow.project_id,
         ProjectInfo.user_id == current_user.id
     ).first()
     if project is None:
@@ -293,4 +283,4 @@ def delete_ui_business_flow(
 
     db.delete(business_flow)
     db.commit()
-    return{"message": "Business flow deleted successfully"}
+    return {"message": "Business flow deleted successfully"}
