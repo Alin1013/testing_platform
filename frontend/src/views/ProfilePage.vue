@@ -79,7 +79,6 @@
         <!-- 账户操作 -->
         <el-card class="account-actions" header="账户操作">
           <div class="actions-content">
-            <p>邮箱: {{ userStore.user?.email || '未设置' }}</p>
             <p>注册时间: {{ formatDate(userStore.user?.created_at) }}</p>
             <el-button type="danger" @click="showDeleteDialog = true">
               注销账户
@@ -183,7 +182,15 @@ const getAvatarUrl = (avatarPath) => {
 // 工具函数：格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '未知'
-  return new Date(dateString).toLocaleDateString('zh-CN')
+  // 尝试解析日期，处理不同格式
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) {  // 检查日期是否有效
+    return '格式错误'
+  }
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 // 头像上传前验证
@@ -295,6 +302,9 @@ onMounted(async () => {
       router.push('/login')
     }
   }
+  // 调试代码
+  console.log('用户信息:', userStore.user)
+  console.log('注册时间:', userStore.user?.created_at)
   profileForm.username = userStore.user?.username || ''
 })
 </script>

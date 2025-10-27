@@ -198,17 +198,29 @@ const handleLogin = async () => {
 
 /* 确保错误提示样式正确 */
 :deep(.el-alert) {
-  border: 1px solid #f56c6c;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;      /* 垂直居中 */
+  justify-content: center;  /* 水平居中 */
+  padding: 10px 12px;
+  min-height: 48px;         /* 给足高度，上下留白自然对称 */
 }
 
-:deep(.el-alert__title) {
-  font-weight: bold;
-  color: #f56c6c;
+:deep(.el-alert__content) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+:deep(.el-alert__icon) {
+  margin: 0 6px 0 0;
+  align-self: center;
 }
 
 :deep(.el-alert__description) {
-  color: #f56c6c;
-  margin-top: 4px;
+  margin: 0;
+  line-height: 1.4;
 }
 </style>

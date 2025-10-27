@@ -26,8 +26,17 @@ class UserResponse(UserBase):
     created_at: datetime
     updated_at: datetime
 
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    avatar_path: Optional[str]
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
     class Config:
         from_attributes = True
+        orm_mode = True
 
 # 项目相关的模式
 class ProjectBase(BaseModel):
@@ -44,6 +53,7 @@ class ProjectResponse(ProjectBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 # 接口测试相关的模式
 class APITestCaseBase(BaseModel):
@@ -65,6 +75,7 @@ class APITestCaseResponse(APITestCaseBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 # UI测试相关的模式
 class UITestCaseBase(BaseModel):
@@ -82,6 +93,7 @@ class UITestCaseResponse(UITestCaseBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 # 业务流程相关的模式
 class BusinessFlowBase(BaseModel):
@@ -99,6 +111,7 @@ class BusinessFlowResponse(BusinessFlowBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 # 测试报告相关的模式
 class TestReportBase(BaseModel):
@@ -117,6 +130,7 @@ class TestReportResponse(TestReportBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 # 认证相关的模式
 class Token(BaseModel):

@@ -8,20 +8,27 @@ export const userAPI = {
       return response
     } catch (error) {
       // 统一错误格式，确保前端能正确解析
-      if (error.response) {
-        // 服务器返回错误状态码
-        const serverError = new Error(error.response.data?.detail || '登录失败')
-        serverError.response = error.response
-        throw serverError
-      } else if (error.request) {
-        // 请求发送但无响应
-        throw new Error('网络连接失败，请检查网络连接')
-      } else {
-        // 其他错误
-        throw new Error(error.message || '登录失败')
+    if (error.response) {
+      // 服务器返回错误状态码
+      const status = error.response.status
+      let errorMsg = error.response.data?.detail || '登录失败'
+
+      // 区分500错误
+      if (status === 500) {
+        errorMsg = '服务器内部错误，请稍后重试'
       }
+
+      const serverError = new Error(errorMsg)
+      serverError.response = error.response
+      throw serverError
+    } else if (error.request) {
+      // 真正的网络错误（无响应）
+      throw new Error('网络连接失败，请检查网络连接')
+    } else {
+      throw new Error(error.message || '登录失败')
     }
-  },
+  }
+},
 
   // 用户注册 - 使用 FormData
   async register(userData) {

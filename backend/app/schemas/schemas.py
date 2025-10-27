@@ -27,6 +27,7 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class ProjectBase(BaseModel):
     project_name: str
@@ -42,6 +43,7 @@ class ProjectResponse(ProjectBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class APITestCaseBase(BaseModel):
     case_name: str
@@ -62,6 +64,7 @@ class APITestCaseResponse(APITestCaseBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class UITestCaseBase(BaseModel):
     case_name: str
@@ -78,6 +81,7 @@ class UITestCaseResponse(UITestCaseBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class BusinessFlowBase(BaseModel):
     flow_name: str
@@ -94,6 +98,7 @@ class BusinessFlowResponse(BusinessFlowBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class TestReportBase(BaseModel):
     report_name: str
@@ -111,6 +116,7 @@ class TestReportResponse(TestReportBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
 class Token(BaseModel):
     access_token: str
