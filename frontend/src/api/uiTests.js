@@ -2,7 +2,7 @@ import api from './index'
 
 export const uiTestsAPI = {
   // 获取UI测试用例
-  getUiTestCases(project_id) {
+  getUiTestCases(projectId) {
     return api.get(`/projects/${projectId}/ui-tests`)
   },
 
@@ -27,7 +27,7 @@ export const uiTestsAPI = {
   },
 
   // 获取UI测试报告
-  getUiTestReports(project_id) {
+  getUiTestReports(projectId) {
     return api.get(`/projects/${projectId}/ui-tests/reports`)
   },
 
@@ -42,7 +42,7 @@ export const uiTestsAPI = {
   },
 
   // 获取业务流程列表
-  getBusinessFlows(project_id) {
+  getBusinessFlows(projectId) {
     return api.get(`/projects/${projectId}/ui-business-flows`)
   },
 

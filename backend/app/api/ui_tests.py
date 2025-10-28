@@ -5,15 +5,16 @@ from app.models import UIInfo, ProjectInfo, UserInfo, TestReports, BusinessFlow
 from app.schemas import UITestCaseCreate, UITestCaseResponse, BusinessFlowCreate, BusinessFlowResponse
 from app.auth import get_current_user
 from app.core.ui_test_runner import UITestRunner
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 import uuid
 import json
 
-router = APIRouter()
+router = APIRouter(prefix="/projects", tags=["UI Tests"])
+
 
 # 获得测试用例
-@router.get("/projects/{project_id}/ui-tests", response_model=List[UITestCaseResponse])
+@router.get("/{project_id}/ui-tests", response_model=List[UITestCaseResponse])
 def get_ui_test_cases(
         project_id: int,
         current_user: UserInfo = Depends(get_current_user),
@@ -28,10 +29,22 @@ def get_ui_test_cases(
         raise HTTPException(status_code=404, detail="Project not found")
 
     test_cases = db.query(UIInfo).filter(UIInfo.project_id == project_id).all()
+
+    # 将steps字段从JSON字符串转换为列表
+    for test_case in test_cases:
+        if test_case.steps and isinstance(test_case.steps, str):
+            try:
+                test_case.steps = json.loads(test_case.steps)
+            except json.JSONDecodeError:
+                test_case.steps = []
+        else:
+            test_case.steps = test_case.steps or []
+
     return test_cases
 
+
 # 创建测试用例
-@router.post("/projects/{project_id}/ui-tests", response_model=UITestCaseResponse)
+@router.post("/{project_id}/ui-tests", response_model=UITestCaseResponse)
 def create_ui_test_case(
         project_id: int,
         test_case: UITestCaseCreate,
@@ -46,15 +59,30 @@ def create_ui_test_case(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    # 将steps列表转换为JSON字符串存储
+    steps_json = json.dumps(test_case.steps) if test_case.steps else "[]"
+
     db_test_case = UIInfo(
         case_name=test_case.case_name,
         project_id=project_id,
-        script_content=test_case.script_content
+        base_url=test_case.base_url,
+        script_content=test_case.script_content,
+        steps=steps_json,
+        record=test_case.record if hasattr(test_case, 'record') else False
     )
+
     db.add(db_test_case)
     db.commit()
     db.refresh(db_test_case)
+
+    # 将steps字段转换回列表返回
+    if db_test_case.steps and isinstance(db_test_case.steps, str):
+        db_test_case.steps = json.loads(db_test_case.steps)
+    else:
+        db_test_case.steps = db_test_case.steps or []
+
     return db_test_case
+
 
 # 更新测试用例
 @router.put("/ui-tests/{test_case_id}", response_model=UITestCaseResponse)
@@ -76,11 +104,26 @@ def update_ui_test_case(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    # 更新所有字段
     db_test_case.case_name = test_case.case_name
+    db_test_case.base_url = test_case.base_url
     db_test_case.script_content = test_case.script_content
+    db_test_case.steps = json.dumps(test_case.steps) if test_case.steps else "[]"
+    if hasattr(test_case, 'record'):
+        db_test_case.record = test_case.record
+    db_test_case.updated_at = datetime.now()
+
     db.commit()
     db.refresh(db_test_case)
+
+    # 将steps字段转换回列表返回
+    if db_test_case.steps and isinstance(db_test_case.steps, str):
+        db_test_case.steps = json.loads(db_test_case.steps)
+    else:
+        db_test_case.steps = db_test_case.steps or []
+
     return db_test_case
+
 
 # 删除测试用例
 @router.delete("/ui-tests/{test_case_id}")
@@ -105,11 +148,12 @@ def delete_ui_test_case(
     db.commit()
     return {"message": "UI test case deleted successfully"}
 
+
 # 执行测试用例
 @router.post("/projects/{project_id}/ui-tests/run")
 def run_ui_tests(
         project_id: int,
-        test_case_ids: List[int],
+        request_data: dict,
         background_tasks: BackgroundTasks,
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
@@ -122,19 +166,31 @@ def run_ui_tests(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    test_case_ids = request_data.get("test_case_ids", [])
+
     # 获取测试用例
     test_cases = db.query(UIInfo).filter(
         UIInfo.project_id == project_id,
         UIInfo.id.in_(test_case_ids)
     ).all()
 
+    # 为每个测试用例解析steps字段
+    for test_case in test_cases:
+        if test_case.steps and isinstance(test_case.steps, str):
+            try:
+                test_case.steps = json.loads(test_case.steps)
+            except json.JSONDecodeError:
+                test_case.steps = []
+        else:
+            test_case.steps = test_case.steps or []
 
     # 创建测试报告记录
     report = TestReports(
         report_name=f"UI_Test_{uuid.uuid4().hex[:8]}",
         project_id=project_id,
         test_type="ui",
-        status="running"
+        status="running",
+        created_at=datetime.now()
     )
     db.add(report)
     db.commit()
@@ -160,13 +216,16 @@ def run_ui_tests_background(test_cases, report_id, db):
         if report:
             report.status = "completed"
             report.report_path = results.get("report_path")
+            report.updated_at = datetime.now()
             db.commit()
     except Exception as e:
         # 更新测试报告为失败
         report = db.query(TestReports).filter(TestReports.id == report_id).first()
         if report:
             report.status = "failed"
+            report.updated_at = datetime.now()
             db.commit()
+        print(f"UI tests failed: {e}")
 
 # 创建工作流
 @router.post("/projects/{project_id}/ui-business-flows", response_model=BusinessFlowResponse)
@@ -284,3 +343,7 @@ def delete_ui_business_flow(
     db.delete(business_flow)
     db.commit()
     return {"message": "Business flow deleted successfully"}
+
+@router.get("/test-route")
+def test_route():
+    return {"message": "UI tests router is working"}
