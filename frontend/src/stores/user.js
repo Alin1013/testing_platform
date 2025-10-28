@@ -61,20 +61,33 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 更新头像：同步更新 userInfo 中的头像路径
-  const updateAvatar = async (avatarFile) => {
-    try {
-      const response = await userAPI.updateAvatar(avatarFile)
-      if (user.value) {
-        user.value.avatar_path = response.data.filename
-        // 同步更新本地存储
-        localStorage.setItem('userInfo', JSON.stringify(user.value))
+// 更新用户头像
+const updateAvatar= async(avatarFile) =>{
+  try {
+    const formData = new FormData()
+    formData.append('file', avatarFile)
+
+    const response = await api.post('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-      return response
-    } catch (error) {
-      throw error
+    })
+    return response
+  } catch (error) {
+    if (error.response) {
+      // 显示具体的错误信息
+      const errorMsg = error.response.data?.detail || '头像上传失败'
+      console.error('头像上传错误详情:', error.response.data)
+      const serverError = new Error(errorMsg)
+      serverError.response = error.response
+      throw serverError
+    } else if (error.request) {
+      throw new Error('网络连接失败，请检查网络连接')
+    } else {
+      throw new Error(error.message || '头像上传失败')
     }
   }
+}
 
   // 获取当前用户信息：用于页面初始化加载
   const fetchCurrentUser = async () => {

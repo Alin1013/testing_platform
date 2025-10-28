@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Boolean,DateTime
 from sqlalchemy.sql import func
 from app.database import Base
+from datetime import datetime
 
 
 class UserInfo(Base):
@@ -11,5 +12,5 @@ class UserInfo(Base):
     password_hash = Column(String(255), nullable=False)
     avatar_path = Column(String(255))
     is_active = Column(Boolean, default=True)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -118,24 +120,60 @@ def upload_avatar(
         current_user: UserInfo = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    # 创建头像目录
-    avatar_dir = Path("static/avatars")
-    avatar_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        print(f"开始上传头像，用户ID: {current_user.id}")
+        print(f"当前头像路径: {current_user.avatar_path}")
 
-    # 生成文件名
-    file_extension = file.filename.split('.')[-1]
-    filename = f"avatar_{current_user.id}.{file_extension}"
-    file_path = avatar_dir / filename
+        # 创建头像目录
+        avatar_dir = Path("static/avatars")
+        avatar_dir.mkdir(parents=True, exist_ok=True)
+        print(f"头像目录: {avatar_dir.absolute()}")
 
-    # 保存文件
-    with file_path.open("wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        # 生成文件名
+        if '.' in file.filename:
+            file_extension = file.filename.split('.')[-1]
+        else:
+            file_extension = 'png'
 
-    # 更新数据库
-    current_user.avatar_path = filename
-    db.commit()
+        filename = f"avatar_{current_user.id}_{int(datetime.now().timestamp())}.{file_extension}"
+        file_path = avatar_dir / filename
+        print(f"新头像文件路径: {file_path}")
 
-    return {"filename": filename, "message": "Avatar uploaded successfully"}
+        # 保存文件
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        print("文件保存成功")
+
+        # 删除旧头像文件（如果不是默认头像）
+        if current_user.avatar_path and current_user.avatar_path != "default_avatar.png":
+            old_avatar_path = avatar_dir / current_user.avatar_path
+            if old_avatar_path.exists():
+                old_avatar_path.unlink()
+                print(f"删除旧头像: {old_avatar_path}")
+
+        # 更新数据库
+        print("开始更新数据库...")
+        current_user.avatar_path = filename
+        current_user.updated_at = datetime.now()
+
+        db.commit()
+        db.refresh(current_user)
+        print(f"数据库更新成功，新头像路径: {current_user.avatar_path}")
+
+        return {
+            "filename": filename,
+            "message": "Avatar uploaded successfully",
+            "user": UserResponse.from_orm(current_user)
+        }
+
+    except Exception as e:
+        print(f"头像上传失败: {str(e)}")
+        print(f"错误类型: {type(e)}")
+        import traceback
+        traceback.print_exc()
+
+        db.rollback()  # 回滚事务
+        raise HTTPException(status_code=500, detail=f"头像上传失败: {str(e)}")
 
 
 @router.delete("/users/me")

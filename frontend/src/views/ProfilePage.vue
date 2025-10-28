@@ -16,6 +16,7 @@
             :headers="uploadHeaders"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
+            :on-error="handleAvatarError"
             :before-upload="beforeAvatarUpload"
           >
             <el-avatar
@@ -209,10 +210,27 @@ const beforeAvatarUpload = (file) => {
   return true
 }
 
+// 头像上传失败回调
+const handleAvatarError = (error) => {
+  console.error('头像上传错误:', error)
+  let errorMessage = '头像上传失败'
+  if (error.response && error.response.data && error.response.data.detail) {
+    errorMessage = error.response.data.detail
+  }
+  ElMessage.error(errorMessage)
+}
+
 // 头像上传成功回调
-const handleAvatarSuccess = () => {
+const handleAvatarSuccess = async (response) => {
   ElMessage.success('头像上传成功')
-  // 无需手动更新userInfo：userStore.updateAvatar已同步本地存储
+  try {
+    // 重新获取用户信息以确保数据同步
+    await userStore.fetchCurrentUser()
+    console.log('头像更新后用户信息:', userStore.user)
+  } catch (error) {
+    console.error("更新用户信息失败:", error)
+    ElMessage.error('更新用户信息失败')
+  }
 }
 
 // 更新个人信息（仅更新密码，不包含用户名）
@@ -305,6 +323,7 @@ onMounted(async () => {
   // 调试代码
   console.log('用户信息:', userStore.user)
   console.log('注册时间:', userStore.user?.created_at)
+  console.log('更新时间:',userStore.user?.updated_at)
   profileForm.username = userStore.user?.username || ''
 })
 </script>
