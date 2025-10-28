@@ -1,9 +1,16 @@
 <template>
   <div class="performance-container">
+    <div class="page-header">
+      <el-button @click="$router.push('/projects')" class="back-button">
+        <el-icon><ArrowLeft /></el-icon>
+        返回项目
+      </el-button>
+      <h2 class="page-title">性能测试</h2>
+      <div style="width: 120px"></div> <!-- 占位保持对称 -->
+    </div>
     <el-card>
       <template #header>
         <div class="card-header">
-          <h2>性能测试</h2>
           <el-button type="primary" @click="showTestConfigDialog = true">
             <el-icon><Plus /></el-icon>
             创建性能测试
@@ -98,7 +105,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus,ArrowLeft } from '@element-plus/icons-vue'
 import { performanceAPI } from '../api/performance'
 
 const route = useRoute()
@@ -246,14 +253,50 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.card-header {
+/* 新增页面头部样式 */
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.page-title {
+  text-align: center;
+  margin: 0;
+  color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+  flex: 1;
 }
 
 .back-button {
-  margin-top: 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: flex-end; /* 右对齐 */
+  align-items: center;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .page-title {
+    order: -1; /* 标题移到最前面 */
+  }
+
+  .back-button {
+    align-self: flex-start;
+  }
 }
 </style>

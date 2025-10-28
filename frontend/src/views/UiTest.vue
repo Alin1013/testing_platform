@@ -1,9 +1,17 @@
 <template>
   <div class="ui-test-container">
+    <!-- 添加返回按钮到顶部 -->
+    <div class="page-header">
+      <el-button @click="$router.push('/projects')" class="back-button">
+        <el-icon><ArrowLeft /></el-icon>
+        返回项目
+      </el-button>
+      <h2 class="page-title">UI测试</h2>
+      <div style="width: 120px"></div> <!-- 占位保持对称 -->
+    </div>
     <el-card>
       <template #header>
         <div class="card-header">
-          <h2>UI测试</h2>
           <el-button type="primary" @click="showCreateDialog = true">
             <el-icon><Plus /></el-icon>
             创建UI测试用例
@@ -245,7 +253,7 @@
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus,ArrowLeft } from '@element-plus/icons-vue'
 import { uiTestsAPI } from '../api/uiTests'
 
 const route = useRoute()
@@ -848,9 +856,33 @@ onMounted(() => {
   min-height: calc(100vh - 40px);
 }
 
-.card-header {
+/* 新增页面头部样式 */
+.page-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.page-title {
+  text-align: center;
+  margin: 0;
+  color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: flex-end; /* 右对齐 */
   align-items: center;
   flex-wrap: wrap;
   gap: 15px;
@@ -992,6 +1024,19 @@ onMounted(() => {
 }
 
 /* 响应式调整 */
+@media(max-width: 768px){
+  .page-header{
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  .page-title{
+    order:-1;
+  }
+  .back-button{
+    align-self: flex-start;
+  }
+}
 @media (max-width: 1200px) {
   .ui-test-container {
     padding: 15px;

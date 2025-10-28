@@ -119,8 +119,7 @@ const handleLogin = async () => {
   try {
     await userStore.login(form)
     ElMessage.success('登录成功')
-    router.push('/')
-  } catch (error) {
+    router.push('/projects')
     console.error('登录错误详情:', error)
 
     // 提取错误信息

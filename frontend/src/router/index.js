@@ -1,74 +1,62 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import LoginPage from '@/views/LoginPage.vue'
+import ProjectsPage from '@/views/ProjectsPage.vue'
+import ApiPage from '@/views/ApiTest.vue'
+import UITest from '@/views/UITest.vue'
+import PerformancePage from '@/views/PerformancePage.vue'
+import ProfilePage from "@/views/ProfilePage.vue"
+import RegisterPage from "@/views/RegisterPage.vue"
 
 const routes = [
-    {
-  path: '/debug',
-  name: 'Debug',
-  component: () => import('@/views/DebugPage.vue')
-},
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/LoginPage.vue'),
-    meta: { requiresAuth: false, title: '登录' }
+    component: LoginPage,
+    meta: { requiresGuest: true } // 仅未登录用户可访问
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/RegisterPage.vue'),
-    meta: { requiresAuth: false, title: '注册' }
-  },
-  {
-    path: '/',
-    name: 'Home',
-  },
-
-  {
-    path: '/projects',
-    name: 'Projects',
-    component: () => import('@/views/ProjectsPage.vue'),
-    meta: { requiresAuth: true, title: '项目管理' }
-  },
-  {
-    path: '/projects/:projectId',
-    name: 'ProjectDetail',
-    component: () => import('@/views/ProjectsPage.vue'),
-    meta: { requiresAuth: true, title: '项目详情' }
-  },
-  {
-    path: '/api-test',
-    name: 'ApiTest',
-    component: () => import('@/views/ApiTest.vue'),
-    meta: { requiresAuth: true, title: 'API测试' }
-  },
-  {
-    path: '/api-test/:projectId?',
-    name: 'ApiTestWithProject',
-    component: () => import('@/views/ApiTest.vue'),
-    meta: { requiresAuth: true, title: 'API测试' }
-  },
-  {
-    path: '/ui-test',
-    name: 'UiTest',
-    component: () => import('@/views/UiTest.vue'),
-    meta: { requiresAuth: true, title: 'UI测试' }
-  },
-  {
-    path: '/performance',
-    name: 'Performance',
-    component: () => import('@/views/PerformancePage.vue'),
-    meta: { requiresAuth: true, title: '性能测试' }
+    component: RegisterPage,
+    meta: { requiresGuest: true }
   },
   {
     path: '/profile',
-    name: 'Profile',
-    component: () => import('@/views/ProfilePage.vue'),
-    meta: { requiresAuth: true, title: '个人资料' }
+    name: 'ProfilePage',
+    component: ProfilePage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/projects',
+    name: 'Projects',
+    component: ProjectsPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/projects/:projectId/api-test',
+    name: 'ApiTest',
+    component: ApiPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/projects/:projectId/ui-test',
+    name: 'UITest',
+    component: UITest,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/projects/:projectId/performance-test',
+    name: 'PerformanceTest',
+    component: PerformancePage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/',
+    redirect: '/projects'
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/dashboard'
+    redirect: '/projects' // 或者可以重定向到404页面
   }
 ]
 
@@ -77,21 +65,42 @@ const router = createRouter({
   routes
 })
 
+// 增强的路由守卫
 router.beforeEach((to, from, next) => {
-  const userStore = useUserStore()
+  const token = localStorage.getItem('token')
+  const isAuthenticated = !!token
 
-  // 设置页面标题
-  if (to.meta.title) {
-    document.title = `${to.meta.title} - 测试平台`
+  // 检查路由是否需要认证
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      // 重定向到登录页，并保存目标路由以便登录后跳转
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
+    } else {
+      next()
+    }
   }
-
-  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
-    next('/login')
-  } else if ((to.path === '/login' || to.path === '/register') && userStore.isAuthenticated) {
-    next('/dashboard')
-  } else {
+  // 检查路由是否需要未登录状态（如登录页、注册页）
+  else if (to.matched.some(record => record.meta.requiresGuest)) {
+    if (isAuthenticated) {
+      // 已登录用户访问登录/注册页，重定向到项目页
+      next('/projects')
+    } else {
+      next()
+    }
+  }
+  // 其他路由直接放行
+  else {
     next()
   }
+})
+
+// 可选的：响应式认证状态检查
+router.afterEach((to) => {
+  // 可以在这里添加页面访问统计等
+  console.log(`Navigated to: ${to.name}`)
 })
 
 export default router

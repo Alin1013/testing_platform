@@ -8,19 +8,7 @@
         </div>
 
         <div class="nav-section">
-          <el-menu
-            :default-active="activeIndex"
-            class="nav-menu"
-            mode="horizontal"
-            router
-            @select="handleSelect"
-          >
-            <el-menu-item index="/">首页</el-menu-item>
-            <el-menu-item index="/projects">项目管理</el-menu-item>
-            <el-menu-item index="/api-test">接口测试</el-menu-item>
-            <el-menu-item index="/ui-test">UI测试</el-menu-item>
-            <el-menu-item index="/performance">性能测试</el-menu-item>
-          </el-menu>
+          <h2>项目管理</h2>
         </div>
 
         <div class="user-section">

@@ -26,10 +26,13 @@
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="280">
           <template #default="scope">
-            <el-button size="small" @click="editProject(scope.row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="deleteProject(scope.row)">删除</el-button>
+            <div class="action-buttons">
+              <el-button size="small" @click="enterProject(scope.row)">进入项目</el-button>
+              <el-button size="small" @click="editProject(scope.row)">编辑</el-button>
+              <el-button size="small" type="danger" @click="deleteProject(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -65,7 +68,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { projectsAPI } from '../api/projects'
+import { projectsAPI } from '@/api/projects'
+import {useRouter} from "vue-router";
 
 const projects = ref([])
 const loading = ref(false)
@@ -78,6 +82,25 @@ const projectForm = reactive({
   project_name: '',
   test_style: ''
 })
+
+//添加跳转方法
+const router = useRouter()
+// 进入项目对应的测试界面
+const enterProject = (project) => {
+  switch (project.test_style) {
+    case 'api':
+      router.push(`/projects/${project.id}/api-test`)
+      break
+    case 'ui':
+      router.push(`/projects/${project.id}/ui-test`)
+      break
+    case 'performance':
+      router.push(`/projects/${project.id}/performance-test`)
+      break
+    default:
+      ElMessage.warning('未知的项目类型')
+  }
+}
 
 const projectRules = {
   project_name: [
@@ -192,7 +215,7 @@ onMounted(() => {
 <style scoped>
 .projects-container {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1400px; /* 增加整体宽度 */
   margin: 0 auto;
 }
 
@@ -200,5 +223,41 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* 操作按钮容器样式 */
+.action-buttons {
+  display: flex;
+  gap: 12px; /* 按钮之间的间距 */
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* 确保表格有足够的空间 */
+:deep(.el-table) {
+  width: 100%;
+}
+
+/* 操作列样式调整 */
+:deep(.el-table .cell) {
+  padding: 8px 12px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .projects-container {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .action-buttons .el-button {
+    width: 100%;
+  }
 }
 </style>

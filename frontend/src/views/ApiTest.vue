@@ -1,7 +1,15 @@
 <template>
   <div class="api-tester">
+    <!-- 添加返回按钮到顶部 -->
+    <div class="page-header">
+      <el-button @click="$router.push('/projects')" class="back-button">
+        <el-icon><ArrowLeft /></el-icon>
+        返回项目
+      </el-button>
+      <h2 class="page-title">API 测试工具</h2>
+      <div style="width: 120px"></div>
+    </div>
     <div class="tester-header">
-      <h2>API 测试工具</h2>
       <div class="header-actions">
         <el-button @click="showSaveDialog = true" type="primary" :disabled="!currentRequest.url">
           保存测试用例
@@ -80,6 +88,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute } from 'vue-router'
 import { useApiTestStore } from '../stores/apiTestStore'
 import { apiTestsAPI } from '../api/apiTests'
+import { ArrowLeft } from '@element-plus/icons-vue'
 
 // 组件导入
 import TestCaseList from '../components/api-test/TestCaseList.vue'
@@ -197,7 +206,8 @@ onMounted(() => {
   background: #f5f7fa;
 }
 
-.tester-header {
+/* 新增页面头部样式 */
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -205,6 +215,25 @@ onMounted(() => {
   background: white;
   border-bottom: 1px solid #e6e8eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  text-align: center;
+  margin: 0;
+  color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tester-header {
+  display: none; /* 隐藏原有的头部，因为我们已经有了新的页面头部 */
 }
 
 .tester-body {
@@ -229,6 +258,20 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .page-title {
+    order: -1;
+  }
+
+  .back-button {
+    align-self: flex-start;
+  }
+
   .tester-body {
     grid-template-columns: 1fr;
   }
