@@ -8,7 +8,6 @@
             <el-option label="GET" value="GET" />
             <el-option label="POST" value="POST" />
             <el-option label="PUT" value="PUT" />
-            <el-option label="PATCH" value="PATCH" />
             <el-option label="DELETE" value="DELETE" />
           </el-select>
         </div>

@@ -2,6 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const routes = [
+    {
+  path: '/debug',
+  name: 'Debug',
+  component: () => import('@/views/DebugPage.vue')
+},
   {
     path: '/login',
     name: 'Login',

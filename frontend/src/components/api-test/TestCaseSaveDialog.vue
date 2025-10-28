@@ -1,3 +1,4 @@
+<!-- src/components/api-test/TestCaseSaveDialog.vue -->
 <template>
   <el-dialog v-model="visible" title="保存测试用例" width="500px" :before-close="close">
     <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
@@ -124,15 +125,34 @@ const save = async () => {
         const requestData = buildRequestData(props.currentRequest, form.case_name)
         requestData.project_id = parseInt(props.projectId)
 
-        console.log('保存测试用例:', requestData)
+        console.log('保存测试用例 - 请求数据:', requestData)
+        console.log('保存测试用例 - 请求URL:', `/projects/${props.projectId}/api-tests`)
 
-        await apiTestsAPI.createApiTestCase(props.projectId, requestData)
+        const response = await apiTestsAPI.createApiTestCase(props.projectId, requestData)
+        console.log('保存测试用例 - 响应:', response)
+
         ElMessage.success('保存成功')
         close()
         emit('saved')
       } catch (error) {
-        console.error('保存失败:', error)
-        ElMessage.error('保存失败: ' + (error.response?.data?.detail || error.message))
+        console.error('保存失败 - 详细错误:', error)
+        console.error('保存失败 - 响应数据:', error.response?.data)
+        console.error('保存失败 - 状态码:', error.response?.status)
+        console.error('保存失败 - 请求URL:', error.config?.url)
+
+        let errorMessage = '保存失败'
+        if (error.response) {
+          // 服务器响应了错误状态码
+          errorMessage = `保存失败: ${error.response.status} - ${error.response.data?.detail || error.response.statusText}`
+        } else if (error.request) {
+          // 请求发送了但没有收到响应
+          errorMessage = '保存失败: 无法连接到服务器，请检查网络连接'
+        } else {
+          // 其他错误
+          errorMessage = `保存失败: ${error.message}`
+        }
+
+        ElMessage.error(errorMessage)
       } finally {
         saving.value = false
       }
