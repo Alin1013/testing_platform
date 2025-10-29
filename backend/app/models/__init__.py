@@ -1,7 +1,7 @@
 from .user import UserInfo
 from .project import ProjectInfo
-from .api_test import APIInfo
-from .ui_test import UIInfo
+from .api_test import APIInfo,APIBusinessFlow,APIReport
+from .ui_test import UIInfo,UIBusinessFlow,UIReport
 from .business_flow import BusinessFlow
 from .test_reports import TestReports
 
@@ -10,7 +10,11 @@ __all__ = [
     "UserInfo",
     "ProjectInfo",
     "APIInfo",
+    "APIBusinessFlow",
+    "APIReport",
     "UIInfo",
+    "UIBusinessFlow",
+    "UIReport",
     "BusinessFlow",
     "TestReports"
 ]

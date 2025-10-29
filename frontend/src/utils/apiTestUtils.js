@@ -1,4 +1,3 @@
-// src/utils/apiTestUtils.js
 export const getMethodClass = (method) => {
   const methodClasses = {
     GET: 'method-get',

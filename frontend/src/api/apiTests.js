@@ -1,4 +1,3 @@
-// src/api/apiTests.js
 import api from './index'
 import { mockApiTests } from '@/api/mockApiTests'
 

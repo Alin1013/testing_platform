@@ -10,8 +10,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from app.database import Base
 from app.models.user import UserInfo
 from app.models.project import ProjectInfo
-from app.models.api_test import APIInfo
-from app.models.ui_test import UIInfo
+from app.models.api_test import APIInfo,APIBusinessFlow,APIReport
+from app.models.ui_test import UIInfo,UIBusinessFlow,UIReport
 from app.models.business_flow import BusinessFlow
 from app.models.test_reports import TestReports
 

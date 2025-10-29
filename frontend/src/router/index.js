@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '@/views/LoginPage.vue'
 import ProjectsPage from '@/views/ProjectsPage.vue'
 import ApiPage from '@/views/ApiTest.vue'
-import UITest from '@/views/UITest.vue'
+import UiTest from '@/views/UiTest.vue'
 import PerformancePage from '@/views/PerformancePage.vue'
 import ProfilePage from "@/views/ProfilePage.vue"
 import RegisterPage from "@/views/RegisterPage.vue"
@@ -40,8 +40,8 @@ const routes = [
   },
   {
     path: '/projects/:projectId/ui-test',
-    name: 'UITest',
-    component: UITest,
+    name: 'UiTest',
+    component: UiTest,
     meta: { requiresAuth: true }
   },
   {
