@@ -122,13 +122,16 @@ const save = async () => {
     if (valid) {
       saving.value = true
       try {
-        const requestData = buildRequestData(props.currentRequest, form.case_name)
-        requestData.project_id = parseInt(props.projectId)
+        const requestData = buildRequestData(props.currentRequest, form.case_name,props.projectId)
+
+
+        requestData.project_id = typeof props.projectId === 'string' ?
+          parseInt(props.projectId, 10) : props.projectId
 
         console.log('保存测试用例 - 请求数据:', requestData)
-        console.log('保存测试用例 - 请求URL:', `/projects/${props.projectId}/api-tests`)
+        console.log('保存测试用例 - 请求URL:', `/projects/${requestData.project_id}/api-tests`)
 
-        const response = await apiTestsAPI.createApiTestCase(props.projectId, requestData)
+        const response = await apiTestsAPI.createApiTestCase(requestData.project_id, requestData)
         console.log('保存测试用例 - 响应:', response)
 
         ElMessage.success('保存成功')

@@ -1,4 +1,3 @@
-<!-- src/components/api-test/RequestEditor.vue -->
 <template>
   <div class="request-section">
     <div class="request-config">
@@ -34,28 +33,30 @@
       <el-tabs :model-value="activeRequestTab" @update:model-value="$emit('update:activeRequestTab', $event)" class="request-tabs">
         <el-tab-pane label="请求头" name="headers">
           <div class="key-value-pairs">
-            <div
-              v-for="(header, index) in currentRequest.headers"
-              :key="index"
-              class="key-value-row"
-            >
-              <el-input
-                v-model="header.key"
-                placeholder="Header 名称"
-                class="key-input"
-              />
-              <el-input
-                v-model="header.value"
-                placeholder="Header 值"
-                class="value-input"
-              />
-              <el-button
-                @click="$emit('remove-header', index)"
-                type="danger"
-                text
+            <div class="key-value-list">
+              <div
+                v-for="(header, index) in currentRequest.headers"
+                :key="index"
+                class="key-value-row"
               >
-                删除
-              </el-button>
+                <el-input
+                  v-model="header.key"
+                  placeholder="Header 名称"
+                  class="key-input"
+                />
+                <el-input
+                  v-model="header.value"
+                  placeholder="Header 值"
+                  class="value-input"
+                />
+                <el-button
+                  @click="$emit('remove-header', index)"
+                  type="danger"
+                  text
+                >
+                  删除
+                </el-button>
+              </div>
             </div>
             <el-button @click="$emit('add-header')" type="primary" text>
               添加 Header
@@ -65,28 +66,30 @@
 
         <el-tab-pane label="查询参数" name="params">
           <div class="key-value-pairs">
-            <div
-              v-for="(param, index) in currentRequest.params"
-              :key="index"
-              class="key-value-row"
-            >
-              <el-input
-                v-model="param.key"
-                placeholder="参数名"
-                class="key-input"
-              />
-              <el-input
-                v-model="param.value"
-                placeholder="参数值"
-                class="value-input"
-              />
-              <el-button
-                @click="$emit('remove-param', index)"
-                type="danger"
-                text
+            <div class="key-value-list">
+              <div
+                v-for="(param, index) in currentRequest.params"
+                :key="index"
+                class="key-value-row"
               >
-                删除
-              </el-button>
+                <el-input
+                  v-model="param.key"
+                  placeholder="参数名"
+                  class="key-input"
+                />
+                <el-input
+                  v-model="param.value"
+                  placeholder="参数值"
+                  class="value-input"
+                />
+                <el-button
+                  @click="$emit('remove-param', index)"
+                  type="danger"
+                  text
+                >
+                  删除
+                </el-button>
+              </div>
             </div>
             <el-button @click="$emit('add-param')" type="primary" text>
               添加参数
@@ -115,28 +118,30 @@
             </div>
 
             <div v-if="currentRequest.bodyType === 'form-data'" class="key-value-pairs">
-              <div
-                v-for="(field, index) in currentRequest.formData"
-                :key="index"
-                class="key-value-row"
-              >
-                <el-input
-                  v-model="field.key"
-                  placeholder="字段名"
-                  class="key-input"
-                />
-                <el-input
-                  v-model="field.value"
-                  placeholder="字段值"
-                  class="value-input"
-                />
-                <el-button
-                  @click="$emit('remove-form-data', index)"
-                  type="danger"
-                  text
+              <div class="key-value-list">
+                <div
+                  v-for="(field, index) in currentRequest.formData"
+                  :key="index"
+                  class="key-value-row"
                 >
-                  删除
-                </el-button>
+                  <el-input
+                    v-model="field.key"
+                    placeholder="字段名"
+                    class="key-input"
+                  />
+                  <el-input
+                    v-model="field.value"
+                    placeholder="字段值"
+                    class="value-input"
+                  />
+                  <el-button
+                    @click="$emit('remove-form-data', index)"
+                    type="danger"
+                    text
+                  >
+                    删除
+                  </el-button>
+                </div>
               </div>
               <el-button @click="$emit('add-form-data')" type="primary" text>
                 添加字段
@@ -237,7 +242,19 @@ defineEmits([
 }
 
 .key-value-pairs {
-  space-y: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+}
+
+.key-value-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 250px;
 }
 
 .key-value-row {
@@ -258,5 +275,24 @@ defineEmits([
 
 .json-textarea, .expected-textarea {
   font-family: 'Courier New', monospace;
+}
+
+/* 滚动条样式 */
+.key-value-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.key-value-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.key-value-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.key-value-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

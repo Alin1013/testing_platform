@@ -22,7 +22,7 @@ def api_test_health_check():
 
 
 # 获取项目的所有API测试用例
-@router.get("/projects/{project_id}/api-tests", response_model=List[APITestCaseResponse])
+@router.get("/projects/{project_id}/api-test-cases", response_model=List[APITestCaseResponse])
 def get_api_test_cases(
         project_id: int,
         current_user: UserInfo = Depends(get_current_user),
@@ -46,7 +46,7 @@ def get_api_test_cases(
 
 
 # 创建API测试用例
-@router.post("/projects/{project_id}/api-tests", response_model=APITestCaseResponse)
+@router.post("/projects/{project_id}/api-test-cases", response_model=APITestCaseResponse)
 def create_api_test_case(
         project_id: int,
         test_case: APITestCaseCreate,
@@ -84,7 +84,7 @@ def create_api_test_case(
 
 
 # 更新API测试用例
-@router.put("/api-tests/{test_case_id}", response_model=APITestCaseResponse)
+@router.put("/api-test-cases/{test_case_id}", response_model=APITestCaseResponse)
 def update_api_test_case(
         test_case_id: int,
         test_case: APITestCaseCreate,
@@ -119,7 +119,7 @@ def update_api_test_case(
 
 
 # 删除API测试用例
-@router.delete("/api-tests/{test_case_id}")
+@router.delete("/api-test-cases/{test_case_id}")
 def delete_api_test_case(
         test_case_id: int,
         current_user: UserInfo = Depends(get_current_user),
@@ -144,7 +144,7 @@ def delete_api_test_case(
 
 
 # 执行API测试
-@router.post("/projects/{project_id}/api-tests/run")
+@router.post("/projects/{project_id}/api-test-cases/run")
 def run_api_tests(
         project_id: int,
         background_tasks: BackgroundTasks,
@@ -175,7 +175,7 @@ def run_api_tests(
 
 
 # 获取测试报告
-@router.get("/projects/{project_id}/api-tests/reports")
+@router.get("/projects/{project_id}/api-test-cases/reports")
 def get_api_test_reports(
         project_id: int,
         current_user: UserInfo = Depends(get_current_user),
