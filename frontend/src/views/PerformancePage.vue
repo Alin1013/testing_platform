@@ -69,10 +69,6 @@
       </el-tabs>
     </el-card>
 
-    <!-- 返回按钮 -->
-    <div class="back-button">
-      <el-button @click="$router.push('/projects')">返回项目</el-button>
-    </div>
 
     <!-- 创建测试配置对话框 -->
     <el-dialog title="创建性能测试配置" v-model="showTestConfigDialog" width="600px">
@@ -295,8 +291,5 @@ onMounted(() => {
     order: -1; /* 标题移到最前面 */
   }
 
-  .back-button {
-    align-self: flex-start;
-  }
 }
 </style>

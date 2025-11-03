@@ -59,7 +59,7 @@ except Exception as e:
 
 try:
     from app.api.api_tests import router as api_tests_router
-    app.include_router(api_tests_router, prefix="/api/v1", tags=["api-tests"])
+    app.include_router(api_tests_router, prefix="/api/v1", tags=["api-test-cases"])
     print("✓ API Tests routes loaded successfully")
 except Exception as e:
     print(f"✗ Error loading API tests routes: {e}")

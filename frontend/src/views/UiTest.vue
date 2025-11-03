@@ -62,11 +62,6 @@
       </el-tabs>
     </el-card>
 
-    <!-- 返回按钮 -->
-    <div class="back-button">
-      <el-button @click="$router.push('/projects')">返回项目</el-button>
-    </div>
-
     <!-- 对话框组件 -->
     <TestCaseDialog
       v-model="showCreateDialog"
@@ -356,12 +351,6 @@ onUnmounted(() => {
   font-size: 24px;
   font-weight: 600;
   flex: 1;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .card-header {

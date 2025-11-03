@@ -162,18 +162,38 @@ const loadTestCases = async () => {
 // 加载单个测试用例
 const loadTestCase = (testCase) => {
   selectedTestCase.value = testCase
-  // 将测试用例数据填充到当前请求
+  console.log('加载测试用例:', testCase)
+// 重置当前请求
   Object.assign(currentRequest, {
     method: testCase.method || 'GET',
     url: testCase.url || '',
-    headers: testCase.headers || [{ key: '', value: '' }],
-    params: testCase.params || [{ key: '', value: '' }],
+    headers: testCase.headers ? convertObjectToArray(testCase.headers) : [{ key: '', value: '' }],
+    params: testCase.params ? convertObjectToArray(testCase.params) : [{ key: '', value: '' }],
     bodyType: testCase.body_type || 'json',
     body: testCase.body || '',
-    formData: testCase.form_data || [{ key: '', value: '' }],
+    formData: testCase.form_data ? convertObjectToArray(testCase.form_data) : [{ key: '', value: '' }],
     rawBody: testCase.raw_body || '',
     expected_data: testCase.expected_data || ''
   })
+
+  console.log('填充后的当前请求:', currentRequest)
+}
+
+// 辅助函数：将对象转换为数组格式
+const convertObjectToArray = (obj) => {
+  if (Array.isArray(obj)) {
+    return obj.length > 0 ? obj : [{ key: '', value: '' }]
+  }
+
+  if (obj && typeof obj === 'object') {
+    const array = Object.keys(obj).map(key => ({
+      key: key,
+      value: obj[key]
+    }))
+    return array.length > 0 ? array : [{ key: '', value: '' }]
+  }
+
+  return [{ key: '', value: '' }]
 }
 
 // 添加测试用例
@@ -432,10 +452,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 15px 20px;
   background: white;
   border-bottom: 1px solid #e6e8eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .page-title {
