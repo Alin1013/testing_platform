@@ -8,7 +8,7 @@
         </div>
 
         <div class="nav-section">
-          <h2>项目管理</h2>
+          <h2 @click="goToMainPage" style="cursor:pointer;">项目管理</h2>
         </div>
 
         <div class="user-section">
@@ -61,6 +61,9 @@ import {
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const goToMainPage = () => {
+  router.push('/')
+}
 
 const activeIndex = ref('/')
 

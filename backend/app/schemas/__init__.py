@@ -85,6 +85,7 @@ class UITestCaseBase(BaseModel):
 
 class UITestCaseCreate(UITestCaseBase):
     project_id: int
+    script_content: str
 
 class UITestCaseResponse(UITestCaseBase):
     id: int
